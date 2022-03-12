@@ -1,0 +1,149 @@
+/**
+@mainpage Interview case
+
+@section design Design explanation
+
+Describe what you did here.
+
+
+@section Overview 
+
+According to my understanding the overview of the system is given below.
+
+The Speedometer Driver and ECU drivers are added as they are relevant. 
+
+ECU driver will probably need the torque value and drive the engine, this is just a guess. 
+
+"ADC Driver", "LED Driver" and "Speed Driver" are the parts of software that interacts with external system (external wrt micro controller)
+
+"Speed Driver" will also be coded in a similar fashion to "ADC Driver". 
+
+Other software components that will be used are also displayed for convinience.
+
+![Overview of the system](../../doc/overview.png)
+
+@section Software_Modules
+
+For the context module is defines as one of the followings:
+- header/source pair
+- single header file
+- single source file
+
+Complete list of modules that are in the system are given according to their packages
+- Drivers
+  - <b>ADC Driver</b>: ADC voltage value is read through this module 
+  - <b>Speed Driver:</b> Speed value is read through this module
+  - <b>Error Led:</b> Error led is driven through this led
+- Algorithms
+  - <b>Moving Average Calculator (MAC):</b> moving average calculation is done in this module
+  - <b>Torque Calculator:</b> torque calculation from given graph is done in this function
+  - <b>Voltage Angle Converter (VAC):</b> voltage value is converted to angle value depending on the ADC type in this module
+- <b> App </b>
+  - Torque Worker
+- <b> Tests </b>
+  - Moving Average Calculator Test
+  - Torque Calculator Test
+  - Voltage Angle Converter Test
+  - Torque Worker Test
+  - Common Test Header
+- <b> Error Handler </b>
+  - Error Handler
+- Types
+- Main
+
+@section Overall_Design_Aspects
+
+The aim is to calculate the <b>Torque</b> value so the main focus is on algorithm and app rather than drivers. Drivers are in a way dummy modules for mocked inputs. 
+
+Each element is to be designed with testing in mind. Every element shall be falsifiable. 
+
+@section Design Decisions
+
+Each algorithm (mac, vac and torque calculator) shall be independent of the drivers(no direct include). So that when ever underlying drivers are modified the same algorithm shall be used without or minimal change. 
+
+In order to decrease the amount of coupling between modules, common types are provided in a seperate header file.
+
+App, "Torque Worker" is the orchestrator of both algorithms and drivers in the system. The real work flow for torque calculation is given in this module. By seperating in to a distinct module it is provided that its evaluation method can be altered without any detailed info of algorithms and drivers. 
+
+@section Testing
+
+For every test step inputs and expected outputs are provided as comments. 
+
+All expected results are calculated manually
+
+if module under test collects data for its function then those values are generated through mocking
+
+Any failure in test will repost ht line that failed. (easy error detection in code). "test.h" is created for this purpose. 
+
+@section Relations_Between_Modules_Real_Usage
+
+relations between modules can be observed below for a possible real world usage. 
+
+Arrow direction represents usage relation.
+
+![Overview of the system](../../doc/dependency_real_usage.png)
+
+@section Relations_Between_Modules_Lightyear_Case_Usage
+
+relations between modules can be observed below for a possible test usage (Lightyear Task). 
+
+![Overview of the system](../../doc/dependency_test_usage.png)
+
+@section Activity_Diagrams
+
+As I mentioned before the main focus is on "Torque Worker", "Torque Calculator" and "Moving Average Calculator".
+
+Each of these modules have activity diagrams and respective tests.
+
+\subsection Torque_Worker
+
+ 
+"Torque Worker" is the orchestrator for the algorithms and the drivers, it collects data from the drivers then runs the algorithms. 
+
+![Overview of the system](../../doc/torque_worker.png)
+
+"Get Throttle Angle Percent" activity is explained in more detail below:
+
+![Overview of the system](../../doc/get_throttle_angle_percent.png)
+
+\subsection Torque_Calculator
+
+The "Torque Calculator" is the the algorithm that uses the provided table and generates the torque output by using interpolation in angle percent and in speed axis. 
+
+There is a 2 dimensional table that keeps torque values, and dimensions of the table corresponds to <b>speed</b> and <b>throttle angle percent</b>
+
+for any speed and % pair the respective torque value is interpolated.
+
+There is one <b>assumption</b> that speed is in interval [0, 50] and percent is in interval [0, 100]
+
+respective flow chart is given below:
+
+![Overview of the system](../../doc/torque_calculator.png)
+
+\subsection Moving_Average_Calculator
+
+MAC module calculates the moving average of a value.
+There is a "MAC_WINDOW_WIDTH" parameter in the header that gives the width of the window. It smooths the value but introduces a delay in the system. 
+
+Activity diagram is given below:
+![Overview of the system](../../doc/moving_average_calculator.png)
+
+@section remarks Remarks and suggestions
+
+Some Remarks:
+
+- I have added another error handler to control the LED because I think led is not enough by it self, there is also a need to log the reason for the error. 
+
+
+
+If this was an actual task rather than homework I would have the following items in my mind:
+
+- test detail shall be increased, covering all code can be targeted. 
+  - Exceptional cases shall be handled
+- Algorithms shall not depend on some common types with drivers if possible. they shall be more genering for reuse purpose. 
+- precision levels shall be increase
+  - ADC resolution is given as 0.1 Volt, this can be increase
+  - The Speed/percent torque table defined in torque_calc.c [lines 18-20] shall have higher precision. so that interpolated values would be more precise. 
+
+
+*/
